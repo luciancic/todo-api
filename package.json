@@ -20,6 +20,9 @@
     "test-watch": "nodemon --exec 'npm test'",
     "start": "node server/server.js"
   },
+  "engines": {
+    "node": "8.9.1"
+  },
   "author": "",
   "license": "ISC"
 }
