@@ -20,7 +20,7 @@ app.post('/todos', (req, res) => {
 	let todo = new Todo(req.body);
 
 	todo.save().then((doc) => {
-		res.send(`Created ${doc}`);
+		res.send(doc);
 	}, (e) => {
 		res.status(400).send(e);
 	});
@@ -63,7 +63,7 @@ app.delete('/todos/:id', (req, res) => {
 		if (!todo) {
 			return res.status(404).send('No todo with this ID');
 		}
-		res.send(`Deleted ${todo}`);
+		res.send(todo);
 	}, (e) => {
 		res.status(400).send(e);
 	});
