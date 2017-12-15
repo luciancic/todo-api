@@ -20,7 +20,7 @@ app.post('/todos', (req, res) => {
 	let todo = new Todo(req.body);
 
 	todo.save().then((doc) => {
-		res.send(doc);
+		res.send(`Created ${doc}`);
 	}, (e) => {
 		res.status(400).send(e);
 	});
@@ -47,6 +47,23 @@ app.get('/todos/:id', (req, res) => {
 			return res.status(404).send('No todo with this ID');
 		}
 		res.send(todo);
+	}, (e) => {
+		res.status(400).send(e);
+	});
+});
+
+app.delete('/todos/:id', (req, res) => {
+	let id = req.params.id;
+
+	if (!ObjectID.isValid(id)) {
+		return res.status(400).send('ID you provided is invalid');
+	}
+
+	Todo.findByIdAndRemove(id).then((todo) => {
+		if (!todo) {
+			return res.status(404).send('No todo with this ID');
+		}
+		res.send(`Deleted ${todo}`);
 	}, (e) => {
 		res.status(400).send(e);
 	});
