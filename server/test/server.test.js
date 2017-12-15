@@ -118,4 +118,18 @@ describe('DELETE /todos/:id', () => {
         }).catch((e) => done(e));
       });
   });
+
+  it('should return 404 if not found', (done) => {
+    request(app)
+      .delete(`/todos/${new ObjectID()}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 400 if invalid id', (done) => {
+    request(app)
+      .delete(`/todos/123}`)
+      .expect(400)
+      .end(done);
+  });
 });
