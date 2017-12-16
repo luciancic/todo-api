@@ -101,6 +101,8 @@ describe('DELETE /todos/:id', () => {
   it('should delete the first todo', (done) => {
     let id = todos[0]._id.toHexString();
 
+
+
     request(app)
       .delete(`/todos/${id}`)
       .expect(200)
@@ -129,6 +131,41 @@ describe('DELETE /todos/:id', () => {
   it('should return 400 if invalid id', (done) => {
     request(app)
       .delete(`/todos/123}`)
+      .expect(400)
+      .end(done);
+  });
+});
+
+describe('PATCH /todos/:id', () => {
+  it('should update the first todo', (done) => {
+    let id = todos[0]._id.toHexString();
+
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({completed: true})
+      .expect(200)
+      .expect((res) => {
+        expect(res.completed).toBe(true);
+        expect(res.completedAt).toExist();
+      }).end((err, res) => {
+        Todo.findById(id).then((doc) => {
+          expect(doc).toExist();
+          expect(doc.completed).toBe(true);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should return 404 if not found', (done) => {
+    request(app)
+      .patch(`/todos/${new ObjectID()}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 400 if invalid id', (done) => {
+    request(app)
+      .patch(`/todos/123}`)
       .expect(400)
       .end(done);
   });
