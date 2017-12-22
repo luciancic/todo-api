@@ -12,6 +12,7 @@ let UserSchema = new mongoose.Schema({
     minlength: 1,
     unique: true,
     validate: {
+      isAsync: true,
       validator: validator.isEmail,
       message: '{VALUE} is not a valid email'
     }
@@ -32,12 +33,12 @@ let UserSchema = new mongoose.Schema({
   }]
 });
 
-// UserSchema.methods.toJSON = function() {
-//   let user = this;
-//   let userObject = user.toObject();
-//
-//   return _.pick(userObject, ['_id', 'email']);
-// };
+UserSchema.methods.toJSON = function() {
+  let user = this;
+  let userObject = user.toObject();
+
+  return _.pick(userObject, ['_id', 'email']);
+};
 
 UserSchema.methods.generateAuthToken = function () {
   let user = this;
@@ -71,6 +72,25 @@ UserSchema.statics.findByToken = function (token) {
     'tokens.access': 'auth'
   });
 }
+
+UserSchema.statics.findByCredentials = function (email, password) {
+  let User = this;
+
+  return User.findOne({email}).then((user) => {
+    if (!user) {
+      return Promise.reject();
+    }
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (res) {
+          resolve(user);
+        } else {
+          reject();
+        }
+      });
+    });
+  });
+};
 
 UserSchema.pre('save', function(next) {
   let user = this;

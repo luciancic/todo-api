@@ -16,18 +16,67 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
+
+//
+// GET routes
+//
+
+
 app.get('/', function (req, res) {
 	res.send('Hello World')
 })
 
-app.post('/todos', (req, res) => {
-	let todo = new Todo(req.body);
+app.get('/todos', async (req, res) => {
+	try {
+		let todos = await Todo.find();
+		res.send(todos);
+	} catch (e) {
+		res.status(400).send(e);
+	}
+});
 
-	todo.save().then((doc) => {
-		res.send(doc);
+app.get('/users', (req, res) => {
+	User.find().then((users) => {
+		res.send(users);
 	}, (e) => {
 		res.status(400).send(e);
 	});
+});
+
+app.get('/users/me', authenticate, (req,res) => {
+	res.send(req.user);
+});
+
+app.get('/todos/:id', async (req, res) => {
+	let id = req.params.id;
+
+	if (!ObjectID.isValid(id))
+		return res.status(400).send('ID you provided is invalid');
+
+	try {
+		let todo = await Todo.findById(id);
+		if (!todo)
+			return res.status(404).send('No todo with this ID');
+		res.send(todo);
+	} catch (e) {
+		res.status(400).send(e);
+	}
+});
+
+
+//
+// POST routes
+//
+
+
+app.post('/todos', async (req, res) => {
+	let todo = new Todo(req.body);
+	try {
+		let savedTodo = await todo.save();
+		res.send(savedTodo);
+	} catch (e) {
+		res.status(400).send(e);
+	};
 });
 
 app.post('/users', (req, res) => {
@@ -43,44 +92,21 @@ app.post('/users', (req, res) => {
 	});
 });
 
-app.get('/todos', (req, res) => {
+app.post('/users/login', (req, res) => {
+	let login = _.pick(req.body, ['email', 'password']);
 
-	Todo.find().then((todos) => {
-		res.send(todos);
-	}, (e) => {
-		res.status(400).send(e);
-	});
+	User.findByCredentials(login.email, login.password).then((user) => {
+		return user.generateAuthToken().then((token) => {
+			res.header('x-auth', token).send(user)
+		});
+	}).catch((e) => {res.status(400).send(e)});
 });
 
-app.get('/users', (req, res) => {
 
-	User.find().then((users) => {
-		res.send(users);
-	}, (e) => {
-		res.status(400).send(e);
-	});
-});
+//
+// DELETE routes
+//
 
-app.get('/users/me', authenticate, (req,res) => {
-	res.send(req.user);
-});
-
-app.get('/todos/:id', (req, res) => {
-	let id = req.params.id;
-
-	if (!ObjectID.isValid(id)) {
-		return res.status(400).send('ID you provided is invalid');
-	}
-
-	Todo.findById(id).then((todo) => {
-		if (!todo) {
-			return res.status(404).send('No todo with this ID');
-		}
-		res.send(todo);
-	}, (e) => {
-		res.status(400).send(e);
-	});
-});
 
 app.delete('/todos/:id', (req, res) => {
 	let id = req.params.id;
@@ -98,6 +124,12 @@ app.delete('/todos/:id', (req, res) => {
 		res.status(400).send(e);
 	});
 });
+
+
+//
+// PATCH routes
+//
+
 
 app.patch('/todos/:id', (req,res) => {
 	let id = req.params.id;
@@ -123,6 +155,8 @@ app.patch('/todos/:id', (req,res) => {
 
 	}).catch((e) => res.status(400).send(e));
 });
+
+
 
 app.listen(port, () => {
 	console.log(`Server started on port ${port}.`);
