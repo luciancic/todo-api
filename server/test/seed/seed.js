@@ -30,11 +30,7 @@ const users = [
   {
     _id: new ObjectID(),
     email: 'lucian@example.com',
-    password: 'userTwoPass',
-    tokens: [{
-      access: 'auth',
-      token: 'abc123'
-    }]
+    password: 'userTwoPass'
   }
 ];
 
