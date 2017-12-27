@@ -200,8 +200,46 @@ describe('GET /users', () => {
   });
 });
 
-// describe('POST /users', () => {
-//   it('should post a new user' (done) => {
-//     done();
-//   });
-// });
+describe('POST /users', () => {
+  it('should create a new user', (done) => {
+    let email = 'email@email.com';
+    let password = 'password';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+        expect(res.body._id).toExist();
+        expect(res.body.email).toBe(email);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({email}).then((user) => {
+          expect(user._id).toExist();
+          expect(user.password).toNotBe(password);
+          done();
+        });
+      });
+  });
+
+  it('should return validation errors if request invalid', (done) => {
+    request(app)
+      .post('/users')
+      .send({email: 'email', password: 'password'})
+      .expect(400)
+      .end(done);
+  });
+
+  it('should not create a user if email is in use already', (done) => {
+    request(app)
+      .post('/users')
+      .send({email: 'andrew@example.com', password: 'password'})
+      .expect(400)
+      .end(done);
+  });
+});
