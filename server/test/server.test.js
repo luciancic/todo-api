@@ -10,6 +10,10 @@ const {todos, users, populateTodos, populateUsers} = require('./seed/seed');
 beforeEach(populateUsers);
 beforeEach(populateTodos);
 
+//
+// POST /todos
+//
+
 describe('POST /todos', () => {
   it('should create a new todo', (done) => {
     var text = 'Test todo text';
@@ -50,6 +54,10 @@ describe('POST /todos', () => {
   });
 });
 
+//
+// GET /todos
+//
+
 describe('GET /todos', () => {
   it('should get all todos', (done) => {
     request(app)
@@ -61,6 +69,10 @@ describe('GET /todos', () => {
       .end(done);
   });
 });
+
+//
+// GET /todos/:id
+//
 
 describe('GET /todos/:id', () => {
   it('should return a todo doc', (done) => {
@@ -87,6 +99,10 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 });
+
+//
+// DELETE /todos/:id
+//
 
 describe('DELETE /todos/:id', () => {
   it('should delete the first todo', (done) => {
@@ -127,6 +143,10 @@ describe('DELETE /todos/:id', () => {
   });
 });
 
+//
+// PATCH /todos/:id
+//
+
 describe('PATCH /todos/:id', () => {
   it('should update the first todo', (done) => {
     let id = todos[0]._id.toHexString();
@@ -162,6 +182,10 @@ describe('PATCH /todos/:id', () => {
   });
 });
 
+//
+// GET /users/me
+//
+
 describe('GET /users/me', () => {
   it('should return user if authenticated', (done) => {
     request(app)
@@ -186,6 +210,10 @@ describe('GET /users/me', () => {
   });
 });
 
+//
+// GET /users
+//
+
 describe('GET /users', () => {
   it('should get all users', (done) => {
     request(app)
@@ -199,6 +227,10 @@ describe('GET /users', () => {
       .end(done);
   });
 });
+
+//
+// POST /users
+//
 
 describe('POST /users', () => {
   it('should create a new user', (done) => {
@@ -242,4 +274,29 @@ describe('POST /users', () => {
       .expect(400)
       .end(done);
   });
+});
+
+//
+// POST /users/login
+//
+
+describe('POST /users/login', () => {
+  it('should return auth token upon successful login', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({email: users[0].email, password: users[0].password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+      })
+      .end(done);
+  });
+
+  it('should reject invalid login', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({email: 'someemail', password: 'somepassword'})
+      .expect(400)
+      .end(done);
+  })
 });
