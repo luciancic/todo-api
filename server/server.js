@@ -26,9 +26,9 @@ app.get('/', function (req, res) {
 	res.send('Hello World')
 })
 
-app.get('/todos', async (req, res) => {
+app.get('/todos', authenticate, async (req, res) => {
 	try {
-		let todos = await Todo.find();
+		let todos = await Todo.find({_creator: req.user._id});
 		res.send(todos);
 	} catch (e) {
 		res.status(400).send(e);
@@ -47,14 +47,15 @@ app.get('/users/me', authenticate, (req,res) => {
 	res.send(req.user);
 });
 
-app.get('/todos/:id', async (req, res) => {
+app.get('/todos/:id', authenticate, async (req, res) => {
 	let id = req.params.id;
+	let creator = req.user._id;
 
 	if (!ObjectID.isValid(id))
 		return res.status(400).send('ID you provided is invalid');
 
 	try {
-		let todo = await Todo.findById(id);
+		let todo = await Todo.findOne({_id: id, _creator: creator});
 		if (!todo)
 			return res.status(404).send('No todo with this ID');
 		res.send(todo);
@@ -69,8 +70,11 @@ app.get('/todos/:id', async (req, res) => {
 //
 
 
-app.post('/todos', async (req, res) => {
-	let todo = new Todo(req.body);
+app.post('/todos', authenticate, async (req, res) => {
+	let todo = new Todo({
+		text: req.body.text,
+		_creator: req.user._id
+	});
 	try {
 		let savedTodo = await todo.save();
 		res.send(savedTodo);
@@ -108,14 +112,15 @@ app.post('/users/login', (req, res) => {
 //
 
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
 	let id = req.params.id;
+	let creator = req.user._id;
 
 	if (!ObjectID.isValid(id)) {
 		return res.status(400).send('ID you provided is invalid');
 	}
 
-	Todo.findByIdAndRemove(id).then((todo) => {
+	Todo.findOneAndRemove({_id: id, _creator: creator}).then((todo) => {
 		if (!todo) {
 			return res.status(404).send('No todo with this ID');
 		}
@@ -139,8 +144,10 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 //
 
 
-app.patch('/todos/:id', (req,res) => {
+app.patch('/todos/:id', authenticate, (req,res) => {
 	let id = req.params.id;
+	let creator = req.user._id;
+
 	let body = _.pick(req.body, ['text', 'completed']);
 
 	if (!ObjectID.isValid(id)) {
@@ -154,7 +161,8 @@ app.patch('/todos/:id', (req,res) => {
 		body.completedAt = null;
 	}
 
-	Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((doc) => {
+	Todo.findOneAndUpdate({_id: id, _creator: creator}, {$set: body}, {new: true})
+	.then((doc) => {
 		if (!doc) {
 			return res.status(404).send('No todo with this ID');
 		}
