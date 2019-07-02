@@ -1,16 +1,6 @@
 # node-todo-app
 API for a todo app, complete with secure user authentication.
 
-Built as part of the Complete Node Developer's course on Udemy.
+A learning exercice in the scope of the [Complete Node.js Developer Course](https://www.udemy.com/the-complete-nodejs-developer-course-2/).
 
-Basic uses:
-
-Create a user (creates auth token for login as well),
-Log user in,
-Log user out,
-Create a todo (as logged-in user),
-Modify a todo,
-Fetch todos,
-Delete todos.
-
-For more info, message me through github. Also, feel free to parse the source code.
+Check out the [API docs](https://app.swaggerhub.com/apis-docs/luciancic4/todo/1.0.0) or start using the [API](http://todo.luciancondrea.me/).
