@@ -12,7 +12,6 @@ let UserSchema = new mongoose.Schema({
     minlength: 1,
     unique: true,
     validate: {
-      isAsync: true,
       validator: validator.isEmail,
       message: '{VALUE} is not a valid email'
     }
@@ -59,7 +58,7 @@ UserSchema.methods.generateAuthToken = function () {
 UserSchema.methods.removeToken = function (token) {
   let user = this;
 
-  return user.update({
+  return user.updateOne({
     $pull: {
       tokens: {token}
     }
